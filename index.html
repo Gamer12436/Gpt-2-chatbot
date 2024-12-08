@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPT-2 Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f9;
+        }
+        #chat-container {
+            width: 400px;
+            background: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+        }
+        #chatbox {
+            height: 300px;
+            overflow-y: scroll;
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background: #fafafa;
+        }
+        #chatbox p {
+            margin: 5px 0;
+        }
+        #input-area {
+            display: flex;
+            gap: 10px;
+        }
+        #message {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <div id="chatbox"></div>
+        <div id="input-area">
+            <input type="text" id="message" placeholder="Ask me anything" autofocus>
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+    <script>
+        const apiKey = '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'; // Replace with your Hugging Face API key
+        const modelEndpoint = 'https://api-inference.huggingface.co/models/gpt2';
+
+        // Function to handle sending the user message
+        async function sendMessage() {
+            const messageInput = document.getElementById("message");
+            const userMessage = messageInput.value.trim();
+            if (!userMessage) return;
+
+            // Display user message in chatbox
+            const chatbox = document.getElementById("chatbox");
+            chatbox.innerHTML += `<p><b>You:</b> ${messageInput.value}</p>`;
+
+            // Call Hugging Face API to get GPT-2 response
+            const response = await getGPT2Response(userMessage);
+            
+            // Display GPT-2 response in chatbox
+            chatbox.innerHTML += `<p><b>Bot:</b> ${response}</p>`;
+            
+            // Scroll to the bottom of the chatbox
+            chatbox.scrollTop = chatbox.scrollHeight;
+
+            // Clear the input field
+            messageInput.value = '';
+        }
+
+        // Function to make API call to Hugging Face GPT-2
+        async function getGPT2Response(message) {
+            const response = await fetch(modelEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    inputs: message,
+                    parameters: {
+                        max_length: 100, // Adjust the length of the response
+                    }
+                })
+            });
+            const data = await response.json();
+            return data[0].generated_text || 'Sorry, I couldn\'t generate a response.';
+        }
+    </script>
+</body>
+</html>
